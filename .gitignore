@@ -1,0 +1,30 @@
+# Dependencias
+**/node_modules/
+
+# Variables de entorno: credenciales de BD, JWT_SECRET, puerto serial, etc.
+# Los .env.example SÍ se versionan (documentan qué variables hacen falta).
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Builds / artefactos generados
+frontend/dist/
+backend/dist/
+*.tsbuildinfo
+
+# Logs
+**/*.log
+**/npm-debug.log*
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+docs/
+db/
+mockups/
+CLAUDE.md
+# mockups/, db/ y docs/ se mantienen versionados a propósito: son la fuente
+# de verdad del proyecto (modelo de datos, requerimientos y especificación
+# visual) según CLAUDE.md — no se ignoran.
