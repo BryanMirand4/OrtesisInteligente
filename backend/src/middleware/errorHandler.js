@@ -14,6 +14,10 @@ export function errorHandler(err, req, res, next) {
     return res.status(409).json({ ok: false, data: null, error: 'El registro ya existe.' });
   }
 
+  if (err.code === 'ER_NO_REFERENCED_ROW' || err.code === 'ER_NO_REFERENCED_ROW_2') {
+    return res.status(400).json({ ok: false, data: null, error: 'El registro relacionado no existe o fue dado de baja.' });
+  }
+
   console.error(err);
   return res.status(500).json({ ok: false, data: null, error: 'Error interno del servidor.' });
 }

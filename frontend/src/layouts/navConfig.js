@@ -3,6 +3,7 @@
 export const NAV_POR_PERFIL = {
   Administrador: [
     { to: '/usuarios', label: 'Usuarios', icon: '◈' },
+    { to: '/catalogos', label: 'Catálogos', icon: '▤' },
     { to: '/dispositivo', label: 'Dispositivo', icon: '⚙' },
     { to: '/bitacora', label: 'Bitácora', icon: '≡' },
   ],

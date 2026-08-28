@@ -559,6 +559,49 @@ select {
   padding: 0 10px;
 }
 
+.pacientes__filtros {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pacientes__filtros select {
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  padding: 0 10px;
+}
+
+.mono-destacado {
+  font-family: var(--font-mono);
+  color: var(--teal-dark);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Metas articulares                                                       */
+/* ---------------------------------------------------------------------- */
+
+.metas__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metas__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metas__fila input {
+  height: 40px;
+  width: 140px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  padding: 0 12px;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Mensajes                                                                */
 /* ---------------------------------------------------------------------- */
@@ -596,6 +639,16 @@ select {
   max-width: 440px;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.modal--ancho {
+  max-width: 640px;
+}
+
+.modal__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
 }
 
 .modal h2 {

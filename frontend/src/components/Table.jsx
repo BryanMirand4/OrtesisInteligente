@@ -1,4 +1,4 @@
-export function Table({ columns, data, emptyMessage = 'Sin registros.' }) {
+export function Table({ columns, data, emptyMessage = 'Sin registros.', rowKey }) {
   if (!data || data.length === 0) {
     return <p className="table-empty">{emptyMessage}</p>;
   }
@@ -15,7 +15,13 @@ export function Table({ columns, data, emptyMessage = 'Sin registros.' }) {
         </thead>
         <tbody>
           {data.map((row, i) => (
-            <tr key={row.id_usuario ?? row.id_bitacora ?? row.id ?? i}>
+            <tr
+              key={
+                rowKey
+                  ? rowKey(row)
+                  : row.id_usuario ?? row.id_bitacora ?? row.id_paciente ?? row.id_diagnostico ?? row.id_protocolo ?? row.id ?? i
+              }
+            >
               {columns.map((col) => (
                 <td key={col.key}>{col.render ? col.render(row) : row[col.key]}</td>
               ))}
