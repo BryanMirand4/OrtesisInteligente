@@ -105,7 +105,11 @@ export function Catalogos() {
 
       {error && <p className="mensaje-error">{error}</p>}
 
-      <Card title="DIAGNÓSTICOS" action={<Button onClick={() => setModal({ tipo: 'diagnostico', item: null })}>Nuevo diagnóstico</Button>}>
+      <Card
+        title="DIAGNÓSTICOS"
+        ayuda="Catálogo de diagnósticos clínicos que se pueden asignar a un paciente en su expediente (por ejemplo, el tipo de lesión tendinosa). Un diagnóstico inactivo deja de aparecer como opción al crear o editar un paciente, pero se conserva en los expedientes que ya lo tenían asignado."
+        action={<Button onClick={() => setModal({ tipo: 'diagnostico', item: null })}>Nuevo diagnóstico</Button>}
+      >
         {cargando ? (
           <p>Cargando…</p>
         ) : (
@@ -118,7 +122,11 @@ export function Catalogos() {
         )}
       </Card>
 
-      <Card title="PROTOCOLOS" action={<Button onClick={() => setModal({ tipo: 'protocolo', item: null })}>Nuevo protocolo</Button>}>
+      <Card
+        title="PROTOCOLOS"
+        ayuda="Catálogo de planes de tratamiento que se pueden asignar a un paciente. Cada protocolo define un nombre, una descripción y una cantidad de sesiones meta, que se usa para calcular el avance del paciente (por ejemplo, 9 de 12 sesiones) en la lista de pacientes."
+        action={<Button onClick={() => setModal({ tipo: 'protocolo', item: null })}>Nuevo protocolo</Button>}
+      >
         {cargando ? (
           <p>Cargando…</p>
         ) : (

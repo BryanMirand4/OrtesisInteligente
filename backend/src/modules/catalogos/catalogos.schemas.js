@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+// z.coerce.boolean() usa Boolean(valor): en un query string "false" es un
+// string no vacío, así que Boolean("false") da true. Por eso los filtros
+// booleanos de querystring se parsean explícitamente contra 'true'/'false'.
+const booleanDesdeQuery = z
+  .enum(['true', 'false'])
+  .transform((v) => v === 'true')
+  .optional();
+
 export const crearDiagnosticoSchema = z.object({
   codigo: z.string().max(20).optional().nullable(),
   nombre: z.string().min(1).max(150),
@@ -21,6 +29,6 @@ export const cambiarEstadoCatalogoSchema = z.object({
 });
 
 export const listarCatalogoQuerySchema = z.object({
-  activo: z.coerce.boolean().optional(),
+  activo: booleanDesdeQuery,
   q: z.string().optional(),
 });

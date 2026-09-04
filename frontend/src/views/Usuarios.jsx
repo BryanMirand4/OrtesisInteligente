@@ -147,7 +147,10 @@ export function Usuarios() {
         )}
       </Card>
 
-      <Card title="MATRIZ DE PERMISOS">
+      <Card
+        title="MATRIZ DE PERMISOS"
+        ayuda="Resumen de qué puede hacer cada perfil en cada módulo del sistema, según las reglas de negocio de la aplicación. Es solo de referencia: no se edita desde aquí."
+      >
         <div className="table-wrap">
           <table className="table">
             <thead>

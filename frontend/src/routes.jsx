@@ -7,6 +7,8 @@ import { Usuarios } from './views/Usuarios.jsx';
 import { Bitacora } from './views/Bitacora.jsx';
 import { Pacientes } from './views/Pacientes.jsx';
 import { Catalogos } from './views/Catalogos.jsx';
+import { SesionEnVivo } from './views/SesionEnVivo.jsx';
+import { Dispositivo } from './views/Dispositivo.jsx';
 import { Placeholder } from './views/Placeholder.jsx';
 
 function RutaProtegida({ perfilesPermitidos, children }) {
@@ -34,6 +36,22 @@ export function AppRoutes() {
         }
       >
         <Route path="/" element={<Home />} />
+        <Route
+          path="/sesion-en-vivo"
+          element={
+            <RutaProtegida perfilesPermitidos={['Fisioterapeuta']}>
+              <SesionEnVivo />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/dispositivo"
+          element={
+            <RutaProtegida perfilesPermitidos={['Administrador']}>
+              <Dispositivo />
+            </RutaProtegida>
+          }
+        />
         <Route
           path="/usuarios"
           element={
