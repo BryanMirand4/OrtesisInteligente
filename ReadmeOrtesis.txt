@@ -7,4 +7,6 @@ carga de estadísticas
 avances doctor
 corrección de errores
 
-logistica
+logística
+
+Versión de Errores 
