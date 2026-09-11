@@ -6,3 +6,5 @@ carga de estadísticas
 09092026 carga de usuarios 
 avances doctor
 corrección de errores
+
+logistica
