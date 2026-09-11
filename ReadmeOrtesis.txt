@@ -4,3 +4,5 @@ este Scrip realizo mejoras para funcionamiento de protesis en versión de Mock, 
 avances scrip 3
 carga de estadísticas 
 09092026 carga de usuarios 
+avances doctor
+corrección de errores
