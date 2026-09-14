@@ -9,6 +9,10 @@ import { Pacientes } from './views/Pacientes.jsx';
 import { Catalogos } from './views/Catalogos.jsx';
 import { SesionEnVivo } from './views/SesionEnVivo.jsx';
 import { Dispositivo } from './views/Dispositivo.jsx';
+import { Indicadores } from './views/Indicadores.jsx';
+import { Reportes } from './views/Reportes.jsx';
+import { Expedientes } from './views/Expedientes.jsx';
+import { Expediente } from './views/Expediente.jsx';
 import { Placeholder } from './views/Placeholder.jsx';
 
 function RutaProtegida({ perfilesPermitidos, children }) {
@@ -81,6 +85,38 @@ export function AppRoutes() {
           element={
             <RutaProtegida perfilesPermitidos={['Administrador']}>
               <Catalogos />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/expedientes"
+          element={
+            <RutaProtegida perfilesPermitidos={['Fisioterapeuta', 'Coordinador']}>
+              <Expedientes />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/expedientes/:id"
+          element={
+            <RutaProtegida perfilesPermitidos={['Fisioterapeuta', 'Coordinador']}>
+              <Expediente />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/indicadores"
+          element={
+            <RutaProtegida perfilesPermitidos={['Coordinador']}>
+              <Indicadores />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/reportes"
+          element={
+            <RutaProtegida perfilesPermitidos={['Coordinador', 'Fisioterapeuta']}>
+              <Reportes />
             </RutaProtegida>
           }
         />

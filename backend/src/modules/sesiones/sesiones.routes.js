@@ -20,6 +20,8 @@ router.post('/', validate(iniciarSesionSchema), sesionesController.iniciar);
 router.get('/activa', sesionesController.obtenerActiva);
 router.get('/:id', sesionesController.obtener);
 router.post('/:id/conectar', validate(conectarSesionSchema), sesionesController.conectar);
+router.put('/:id/pausar', sesionesController.pausar);
+router.put('/:id/reanudar', sesionesController.reanudar);
 router.put('/:id/finalizar', validate(finalizarSesionSchema), sesionesController.finalizar);
 router.put('/:id/cancelar', sesionesController.cancelar);
 router.get('/:id/lecturas', sesionesController.listarLecturas);

@@ -9,6 +9,9 @@ import pacientesRoutes from './modules/pacientes/pacientes.routes.js';
 import catalogosRoutes from './modules/catalogos/catalogos.routes.js';
 import sesionesRoutes from './modules/sesiones/sesiones.routes.js';
 import dispositivoRoutes from './modules/dispositivo/dispositivo.routes.js';
+import expedientesRoutes from './modules/expedientes/expedientes.routes.js';
+import indicadoresRoutes from './modules/indicadores/indicadores.routes.js';
+import reportesRoutes from './modules/reportes/reportes.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -26,6 +29,9 @@ app.use('/api/pacientes', pacientesRoutes);
 app.use('/api', catalogosRoutes); // expone /api/diagnosticos, /api/protocolos y /api/dedos
 app.use('/api/sesiones', sesionesRoutes);
 app.use('/api/dispositivo', dispositivoRoutes);
+app.use('/api/expedientes', expedientesRoutes);
+app.use('/api/indicadores', indicadoresRoutes);
+app.use('/api/reportes', reportesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ ok: false, data: null, error: 'Recurso no encontrado.' });

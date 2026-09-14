@@ -18,7 +18,7 @@ export function Table({ columns, data, emptyMessage = 'Sin registros.', rowKey }
             <tr
               key={
                 rowKey
-                  ? rowKey(row)
+                  ? rowKey(row, i)
                   : row.id_usuario ?? row.id_bitacora ?? row.id_paciente ?? row.id_diagnostico ?? row.id_protocolo ?? row.id ?? i
               }
             >

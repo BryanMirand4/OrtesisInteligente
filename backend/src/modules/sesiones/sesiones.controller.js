@@ -2,7 +2,11 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import * as sesionesService from './sesiones.service.js';
 
 export const iniciar = asyncHandler(async (req, res) => {
-  const datos = await sesionesService.iniciar(req.body.id_paciente, req.usuario.id_usuario);
+  const datos = await sesionesService.iniciar(
+    req.body.id_paciente,
+    req.usuario.id_usuario,
+    req.body.forzar_meta_superada,
+  );
   res.status(201).json({ ok: true, data: datos, error: null });
 });
 
@@ -17,7 +21,22 @@ export const obtener = asyncHandler(async (req, res) => {
 });
 
 export const conectar = asyncHandler(async (req, res) => {
-  const datos = await sesionesService.conectar(req.params.id, req.body.puerto, req.usuario.id_usuario);
+  const datos = await sesionesService.conectar(
+    req.params.id,
+    req.body.puerto,
+    req.body.duracion_planeada_minutos,
+    req.usuario.id_usuario,
+  );
+  res.json({ ok: true, data: datos, error: null });
+});
+
+export const pausar = asyncHandler(async (req, res) => {
+  const datos = await sesionesService.pausar(req.params.id, req.usuario.id_usuario);
+  res.json({ ok: true, data: datos, error: null });
+});
+
+export const reanudar = asyncHandler(async (req, res) => {
+  const datos = await sesionesService.reanudar(req.params.id, req.usuario.id_usuario);
   res.json({ ok: true, data: datos, error: null });
 });
 

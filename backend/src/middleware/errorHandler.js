@@ -2,7 +2,7 @@ import { AppError } from '../utils/AppError.js';
 
 export function errorHandler(err, req, res, next) {
   if (err instanceof AppError) {
-    return res.status(err.status).json({ ok: false, data: null, error: err.message });
+    return res.status(err.status).json({ ok: false, data: null, error: err.message, code: err.code });
   }
 
   // Errores lanzados con SIGNAL SQLSTATE '45000' dentro de los procedimientos almacenados

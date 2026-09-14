@@ -10,6 +10,7 @@ import {
   guardarMetasSchema,
 } from './pacientes.schemas.js';
 import * as pacientesController from './pacientes.controller.js';
+import * as expedientesController from '../expedientes/expedientes.controller.js';
 
 const router = Router();
 
@@ -27,6 +28,10 @@ router.post('/', soloFisio, validate(crearPacienteSchema), pacientesController.c
 router.get('/:id', pacientesController.obtener);
 router.put('/:id', soloFisio, validate(actualizarPacienteSchema), pacientesController.actualizar);
 router.put('/:id/estado', soloFisio, validate(cambiarEstadoPacienteSchema), pacientesController.cambiarEstado);
+
+// Alias declarado en CLAUDE.md (7): las sesiones del paciente son las mismas
+// que lista el expediente, con idéntico control de pertenencia.
+router.get('/:id/sesiones', expedientesController.sesiones);
 
 router.get('/:id/metas', pacientesController.listarMetas);
 router.put('/:id/metas', soloFisio, validate(guardarMetasSchema), pacientesController.guardarMetas);

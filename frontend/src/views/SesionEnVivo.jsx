@@ -11,6 +11,7 @@ import { Osciloscopio } from './sesion/Osciloscopio.jsx';
 const VENTANA_SEGUNDOS = 15;
 const MAX_PUNTOS = 300;
 const REFRESCO_MS = 100;
+const DURACION_MIN_POR_DEFECTO = 20;
 
 function mmss(segundos) {
   const s = Math.max(0, Math.floor(segundos || 0));
@@ -34,9 +35,14 @@ export function SesionEnVivo() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [accion, setAccion] = useState(false);
+  const [avisoMeta, setAvisoMeta] = useState(null); // mensaje cuando ya se alcanzó la meta de sesiones
 
   const [puerto, setPuerto] = useState('MOCK');
+  const [duracionMin, setDuracionMin] = useState(String(DURACION_MIN_POR_DEFECTO));
+  const [duracionPlaneadaSegundos, setDuracionPlaneadaSegundos] = useState(null);
   const [conexion, setConexion] = useState({ conectado: false, fuente: null });
+  const [pausada, setPausada] = useState(false);
+  const [tiempoCumplido, setTiempoCumplido] = useState(false);
 
   const [vivo, setVivo] = useState(null);
   const [serie, setSerie] = useState([]);
@@ -50,58 +56,6 @@ export function SesionEnVivo() {
   const t0Ref = useRef(0);
   const ultimoVivoRef = useRef(null);
   const alertaTimerRef = useRef(null);
-
-  // ¿Hay una sesión en curso? + pacientes asignados a este fisioterapeuta.
-  useEffect(() => {
-    let activo = true;
-    (async () => {
-      try {
-        const [activa, lista] = await Promise.all([
-          sesionesApi.obtenerSesionActiva(),
-          pacientesApi.listarPacientes({ activo: true }),
-        ]);
-        if (!activo) return;
-        setPacientes(lista.filter((p) => p.id_fisioterapeuta === usuario.id_usuario));
-        if (activa) {
-          setSesion(activa);
-          setObservaciones(activa.observaciones || '');
-        }
-      } catch (err) {
-        if (activo) setError(err.message);
-      } finally {
-        if (activo) setCargando(false);
-      }
-    })();
-    return () => {
-      activo = false;
-    };
-  }, [usuario.id_usuario]);
-
-  // Refresco throttleado de la gráfica y de los valores en vivo.
-  useEffect(() => {
-    if (!conexion.conectado) return undefined;
-    const timer = setInterval(() => {
-      const ahora = (Date.now() - t0Ref.current) / 1000;
-      const desde = ahora - VENTANA_SEGUNDOS;
-      let ventana = bufferRef.current.filter((m) => m.t >= desde);
-      if (ventana.length > MAX_PUNTOS) {
-        const paso = Math.ceil(ventana.length / MAX_PUNTOS);
-        ventana = ventana.filter((_, i) => i % paso === 0);
-      }
-      setSerie(ventana);
-      if (ultimoVivoRef.current) setVivo(ultimoVivoRef.current);
-    }, REFRESCO_MS);
-    return () => clearInterval(timer);
-  }, [conexion.conectado]);
-
-  // Limpieza al desmontar la vista.
-  useEffect(
-    () => () => {
-      if (socketRef.current) socketRef.current.disconnect();
-      if (alertaTimerRef.current) clearTimeout(alertaTimerRef.current);
-    },
-    [],
-  );
 
   const conectarSocket = useCallback(
     (idSesion) => {
@@ -118,6 +72,10 @@ export function SesionEnVivo() {
       socket.on('estado_captura', (info) =>
         setConexion({ conectado: info.conectado, fuente: info.fuente }),
       );
+
+      socket.on('pausa', (info) => setPausada(info.pausada));
+
+      socket.on('tiempo_cumplido', () => setTiempoCumplido(true));
 
       socket.on('lectura', (l) => {
         if (!t0Ref.current) t0Ref.current = Date.now();
@@ -146,25 +104,102 @@ export function SesionEnVivo() {
     [token],
   );
 
+  // ¿Hay una sesión en curso? + pacientes asignados a este fisioterapeuta.
+  // Si además la captura seguía activa (refresco de página), reconecta el
+  // socket sin volver a llamar a /conectar.
+  useEffect(() => {
+    let activo = true;
+    (async () => {
+      try {
+        const [activa, lista] = await Promise.all([
+          sesionesApi.obtenerSesionActiva(),
+          pacientesApi.listarPacientes({ activo: true }),
+        ]);
+        if (!activo) return;
+        setPacientes(lista.filter((p) => p.id_fisioterapeuta === usuario.id_usuario));
+        if (activa) {
+          setSesion(activa);
+          setObservaciones(activa.observaciones || '');
+          if (activa.captura?.activa) {
+            setConexion({ conectado: true, fuente: activa.captura.fuente });
+            setPausada(activa.captura.pausada);
+            setDuracionPlaneadaSegundos(activa.captura.duracion_planeada_segundos ?? null);
+            t0Ref.current = Date.now() - (activa.captura.cronometro_segundos || 0) * 1000;
+            ultimoVivoRef.current = {
+              cronometro_segundos: activa.captura.cronometro_segundos,
+              flexion: {},
+              orientacion: {},
+              fc: null,
+              repeticiones: 0,
+            };
+            setVivo(ultimoVivoRef.current);
+            conectarSocket(activa.id_sesion);
+          }
+        }
+      } catch (err) {
+        if (activo) setError(err.message);
+      } finally {
+        if (activo) setCargando(false);
+      }
+    })();
+    return () => {
+      activo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuario.id_usuario]);
+
+  // Refresco throttleado de la gráfica y de los valores en vivo.
+  useEffect(() => {
+    if (!conexion.conectado) return undefined;
+    const timer = setInterval(() => {
+      const ahora = (Date.now() - t0Ref.current) / 1000;
+      const desde = ahora - VENTANA_SEGUNDOS;
+      let ventana = bufferRef.current.filter((m) => m.t >= desde);
+      if (ventana.length > MAX_PUNTOS) {
+        const paso = Math.ceil(ventana.length / MAX_PUNTOS);
+        ventana = ventana.filter((_, i) => i % paso === 0);
+      }
+      setSerie(ventana);
+      if (ultimoVivoRef.current) setVivo(ultimoVivoRef.current);
+    }, REFRESCO_MS);
+    return () => clearInterval(timer);
+  }, [conexion.conectado]);
+
+  // Limpieza al desmontar la vista.
+  useEffect(
+    () => () => {
+      if (socketRef.current) socketRef.current.disconnect();
+      if (alertaTimerRef.current) clearTimeout(alertaTimerRef.current);
+    },
+    [],
+  );
+
   function cortarStream() {
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
     setConexion({ conectado: false, fuente: null });
+    setPausada(false);
+    setTiempoCumplido(false);
     setAlerta(null);
   }
 
-  async function iniciar() {
+  async function iniciar(forzarMetaSuperada = false) {
     setError('');
     setAccion(true);
     try {
-      const nueva = await sesionesApi.iniciarSesion(Number(pacienteSel));
+      const nueva = await sesionesApi.iniciarSesion(Number(pacienteSel), forzarMetaSuperada);
+      setAvisoMeta(null);
       setResumen(null);
       setObservaciones('');
       setSesion(nueva);
     } catch (err) {
-      setError(err.message);
+      if (err.code === 'META_ALCANZADA') {
+        setAvisoMeta(err.message);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setAccion(false);
     }
@@ -173,15 +208,39 @@ export function SesionEnVivo() {
   async function conectar() {
     setError('');
     try {
-      const info = await sesionesApi.conectarSesion(sesion.id_sesion, puerto.trim() || 'MOCK');
+      const minutos = Number(duracionMin) || null;
+      const info = await sesionesApi.conectarSesion(sesion.id_sesion, puerto.trim() || 'MOCK', minutos);
       t0Ref.current = 0;
       bufferRef.current = [];
       ultimoVivoRef.current = null;
       setSerie([]);
       setVivo(null);
       setMaxIndice(0);
+      setPausada(false);
+      setTiempoCumplido(false);
+      setDuracionPlaneadaSegundos(info.duracion_planeada_segundos ?? (minutos ? minutos * 60 : null));
       setConexion({ conectado: true, fuente: info.fuente });
       conectarSocket(sesion.id_sesion);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function pausar() {
+    setError('');
+    try {
+      await sesionesApi.pausarSesion(sesion.id_sesion);
+      setPausada(true);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function reanudar() {
+    setError('');
+    try {
+      await sesionesApi.reanudarSesion(sesion.id_sesion);
+      setPausada(false);
     } catch (err) {
       setError(err.message);
     }
@@ -266,7 +325,13 @@ export function SesionEnVivo() {
             <Metrica etiqueta="FC mínima" valor={s.fc_min ?? '—'} sufijo="bpm" />
             <Metrica etiqueta="FC máxima" valor={s.fc_max ?? '—'} sufijo="bpm" />
             <Metrica etiqueta="FC promedio" valor={s.fc_promedio ?? '—'} sufijo="bpm" />
-            <Metrica etiqueta="Duración" valor={mmss(s.duracion_segundos)} />
+            <Metrica etiqueta="Duración activa" valor={mmss(s.duracion_segundos)} />
+            {s.duracion_planeada_segundos != null && (
+              <Metrica etiqueta="Duración planeada" valor={mmss(s.duracion_planeada_segundos)} />
+            )}
+            {s.segundos_pausados > 0 && (
+              <Metrica etiqueta="Tiempo en pausa" valor={mmss(s.segundos_pausados)} />
+            )}
           </div>
           {s.observaciones && (
             <p className="resumen__obs">
@@ -291,6 +356,20 @@ export function SesionEnVivo() {
 
         {error && <p className="mensaje-error">{error}</p>}
 
+        {avisoMeta && (
+          <Card title="META DE SESIONES ALCANZADA">
+            <p>{avisoMeta}</p>
+            <div className="modal__acciones" style={{ justifyContent: 'flex-start' }}>
+              <Button variant="secundario" onClick={() => setAvisoMeta(null)}>
+                Cancelar
+              </Button>
+              <Button disabled={accion} onClick={() => iniciar(true)}>
+                {accion ? 'Iniciando…' : 'Continuar de todas formas'}
+              </Button>
+            </div>
+          </Card>
+        )}
+
         <Card title="NUEVA SESIÓN">
           {pacientes.length === 0 ? (
             <p>No tenés pacientes activos asignados.</p>
@@ -304,7 +383,7 @@ export function SesionEnVivo() {
                   </option>
                 ))}
               </select>
-              <Button disabled={!pacienteSel || accion} onClick={iniciar}>
+              <Button disabled={!pacienteSel || accion} onClick={() => iniciar(false)}>
                 {accion ? 'Iniciando…' : 'Iniciar sesión'}
               </Button>
             </div>
@@ -318,6 +397,15 @@ export function SesionEnVivo() {
   const flexion = vivo?.flexion ?? {};
   const orientacion = vivo?.orientacion ?? {};
   const fcAlta = Boolean(alerta);
+  const etiquetaConexion = tiempoCumplido
+    ? 'Tiempo cumplido'
+    : conexion.conectado
+      ? `Órtesis conectada${conexion.fuente === 'mock' ? ' (simulada)' : ''}${pausada ? ' · en pausa' : ''}`
+      : 'Sin conexión';
+  const tonoConexion = tiempoCumplido ? 'warn' : conexion.conectado ? 'ok' : 'neutral';
+  const etiquetaTiempo = duracionPlaneadaSegundos
+    ? `${mmss(vivo?.cronometro_segundos)} / ${mmss(duracionPlaneadaSegundos)}`
+    : mmss(vivo?.cronometro_segundos);
 
   return (
     <div className="vista vista--ancha">
@@ -329,11 +417,12 @@ export function SesionEnVivo() {
           </p>
         </div>
         <div className="sesion__cabecera-acciones">
-          <Pill tone={conexion.conectado ? 'ok' : 'neutral'}>
-            {conexion.conectado
-              ? `Órtesis conectada${conexion.fuente === 'mock' ? ' (simulada)' : ''}`
-              : 'Sin conexión'}
-          </Pill>
+          <Pill tone={tonoConexion}>{etiquetaConexion}</Pill>
+          {conexion.conectado && !tiempoCumplido && (
+            <Button variant="secundario" onClick={pausada ? reanudar : pausar}>
+              {pausada ? 'Reanudar' : 'Pausar'}
+            </Button>
+          )}
           <Button variant="secundario" disabled={accion} onClick={cancelar}>
             Cancelar
           </Button>
@@ -345,26 +434,47 @@ export function SesionEnVivo() {
 
       {error && <p className="mensaje-error">{error}</p>}
 
+      {tiempoCumplido && (
+        <div className="alerta-fc alerta-fc--info" role="status">
+          ⏱ Se cumplió el tiempo programado: la captura se detuvo. Revisá la observación clínica y
+          confirmá «Finalizar sesión» para guardar el resumen.
+        </div>
+      )}
+
       {alerta && (
         <div className="alerta-fc" role="alert">
           ⚠ Frecuencia cardíaca elevada: {alerta.fc} bpm (umbral {alerta.umbral} bpm)
         </div>
       )}
 
-      {!conexion.conectado && (
+      {!conexion.conectado && !tiempoCumplido && (
         <Card title="CONEXIÓN CON LA ÓRTESIS">
           <div className="sesion__conexion">
-            <label htmlFor="puerto">Puerto</label>
-            <input
-              id="puerto"
-              value={puerto}
-              onChange={(e) => setPuerto(e.target.value)}
-              placeholder="COM4 o MOCK"
-            />
+            <div className="sesion__conexion-campo">
+              <label htmlFor="puerto">Puerto</label>
+              <input
+                id="puerto"
+                value={puerto}
+                onChange={(e) => setPuerto(e.target.value)}
+                placeholder="COM4 o MOCK"
+              />
+            </div>
+            <div className="sesion__conexion-campo">
+              <label htmlFor="duracion">Duración (min)</label>
+              <input
+                id="duracion"
+                type="number"
+                min="1"
+                max="180"
+                value={duracionMin}
+                onChange={(e) => setDuracionMin(e.target.value)}
+              />
+            </div>
             <Button onClick={conectar}>Conectar</Button>
           </div>
           <p className="sesion__conexion-nota">
-            Usá <code>MOCK</code> para trabajar con datos simulados sin hardware.
+            Usá <code>MOCK</code> para trabajar con datos simulados sin hardware. Al cumplirse la
+            duración, la sesión se detiene sola y te pide confirmar el cierre.
           </p>
         </Card>
       )}
@@ -376,7 +486,7 @@ export function SesionEnVivo() {
           <div className="vivo__metricas">
             <Metrica etiqueta="♥ Frecuencia cardíaca" valor={vivo?.fc ?? '—'} sufijo="bpm" alerta={fcAlta} />
             <Metrica etiqueta="Repeticiones" valor={vivo?.repeticiones ?? 0} />
-            <Metrica etiqueta="Tiempo" valor={mmss(vivo?.cronometro_segundos)} />
+            <Metrica etiqueta="Tiempo" valor={etiquetaTiempo} />
             <Metrica etiqueta="Máx. índice" valor={`${maxIndice.toFixed(0)}°`} />
           </div>
 
