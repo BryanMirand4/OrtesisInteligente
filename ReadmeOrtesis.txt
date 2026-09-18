@@ -11,3 +11,4 @@ logística
 
 Versión de Errores 
 corrección de errores
+Con usuario coordinador, en esta versión mejoramos el inicio de sesion
