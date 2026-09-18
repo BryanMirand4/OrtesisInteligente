@@ -11,4 +11,5 @@ logística
 
 Versión de Errores 
 corrección de errores
-Con usuario coordinador, en esta versión mejoramos el inicio de sesion
+Con usuario coordinador, en esta versión mejoramos el inicio de sesión
+Carga Masiva, instructivo de uso con procedimientos
