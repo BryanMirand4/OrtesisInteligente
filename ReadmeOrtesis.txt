@@ -214,6 +214,7 @@ $ git commit -m "Script 1 / Modulo Autenticacion"
  create mode 100644 frontend/src/components/Pill.jsx
  create mode 100644 frontend/src/components/Table.jsx
  create mode 100644 frontend/src/components/Tag.jsx
+cld
  create mode 100644 frontend/src/context/AuthContext.jsx
  create mode 100644 frontend/src/layouts/AppShell.jsx
  create mode 100644 frontend/src/layouts/navConfig.js
