@@ -44,3 +44,9 @@ export const guardarMetasSchema = z.object({
     )
     .min(1),
 });
+
+// Vínculo con la cuenta del portal. `null` retira el acceso; el procedimiento
+// valida que la cuenta tenga perfil Paciente y no pertenezca a otro expediente.
+export const vincularAccesoSchema = z.object({
+  id_usuario_acceso: z.coerce.number().int().positive().nullable(),
+});

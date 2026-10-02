@@ -16,19 +16,28 @@ export function initRealtime(httpServer) {
     cors: { origin: process.env.CORS_ORIGIN, credentials: true },
   });
 
-  io.on('connection', (socket) => {
-    console.log(`Cliente Socket.IO conectado: ${socket.id}`);
+  // Endurecimiento (Sprint 5): el namespace raíz no transmite nada — todo el
+  // streaming vive en /sesion — así que se rechaza cualquier conexión a él en
+  // lugar de dejar abierto un canal anónimo.
+  io.use((socket, next) => {
+    next(new Error('Namespace no disponible.'));
   });
 
   // Namespace dedicado al streaming de la sesión de terapia.
   const nsp = io.of('/sesion');
 
-  // Autenticación del namespace con el mismo JWT que la API REST.
+  // Autenticación del namespace con el mismo JWT que la API REST. La sesión
+  // en vivo es exclusiva del Fisioterapeuta (CLAUDE.md 6.1): el perfil se
+  // valida en el handshake, no solo al unirse a una sala.
   nsp.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('No autenticado.'));
     try {
-      socket.data.usuario = jwt.verify(token, process.env.JWT_SECRET);
+      const usuario = jwt.verify(token, process.env.JWT_SECRET);
+      if (usuario.perfil_nombre !== 'Fisioterapeuta') {
+        return next(new Error('No tiene permisos para seguir una sesión de terapia.'));
+      }
+      socket.data.usuario = usuario;
       next();
     } catch {
       next(new Error('Token inválido o expirado.'));

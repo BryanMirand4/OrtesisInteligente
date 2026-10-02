@@ -85,3 +85,23 @@ export async function guardarMetas(idPaciente, metas, idUsuarioAccion) {
   }
   return listarMetas(idPaciente);
 }
+
+// Cuenta de acceso al portal (Sprint 5). El vínculo vive en
+// `paciente.id_usuario_acceso` y es lo que permite al perfil Paciente
+// resolver su propio expediente al entrar a /api/portal.
+export async function listarCuentasAcceso(idPaciente) {
+  const [results] = await pool.query('CALL sp_paciente_cuentas_acceso(?)', [idPaciente ?? null]);
+  return results[0];
+}
+
+// Un id_usuario_acceso nulo retira el acceso al portal. Las validaciones
+// (perfil Paciente, cuenta activa, no vinculada a otro expediente) las hace
+// el procedimiento, que es el único punto por donde pasa el UPDATE.
+export async function vincularAcceso(idPaciente, idUsuarioAcceso, idUsuarioAccion) {
+  await pool.query('CALL sp_paciente_vincular_acceso(?,?,?)', [
+    idPaciente,
+    idUsuarioAcceso ?? null,
+    idUsuarioAccion,
+  ]);
+  return obtener(idPaciente);
+}

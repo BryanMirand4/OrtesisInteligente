@@ -38,7 +38,7 @@ export function MetasModal({ paciente, onClose }) {
       .map((f) => ({ id_dedo: f.id_dedo, angulo_meta: Number(f.angulo_meta) }));
 
     if (payload.length === 0) {
-      setError('Ingresá al menos un ángulo meta.');
+      setError('Ingrese al menos un ángulo meta.');
       return;
     }
 

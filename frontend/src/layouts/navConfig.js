@@ -19,5 +19,5 @@ export const NAV_POR_PERFIL = {
     { to: '/pacientes', label: 'Pacientes', icon: '◈' },
     { to: '/reportes', label: 'Reportes', icon: '≡' },
   ],
-  Paciente: [{ to: '/portal', label: 'Mi avance', icon: '◈' }],
+  Paciente: [{ to: '/portal', label: 'Mi rehabilitación', icon: '◇' }],
 };

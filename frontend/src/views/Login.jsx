@@ -67,7 +67,7 @@ export function Login() {
         <form onSubmit={onSubmit}>
           <h2>Iniciar sesión</h2>
           <p className="login__subtitulo">
-            Ingresá tus credenciales institucionales.
+            Ingrese sus credenciales institucionales.
           </p>
 
           <label className="login__label" htmlFor="nombre_usuario">

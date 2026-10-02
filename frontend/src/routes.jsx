@@ -13,6 +13,7 @@ import { Indicadores } from './views/Indicadores.jsx';
 import { Reportes } from './views/Reportes.jsx';
 import { Expedientes } from './views/Expedientes.jsx';
 import { Expediente } from './views/Expediente.jsx';
+import { Portal } from './views/Portal.jsx';
 import { Placeholder } from './views/Placeholder.jsx';
 
 function RutaProtegida({ perfilesPermitidos, children }) {
@@ -117,6 +118,14 @@ export function AppRoutes() {
           element={
             <RutaProtegida perfilesPermitidos={['Coordinador', 'Fisioterapeuta']}>
               <Reportes />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/portal"
+          element={
+            <RutaProtegida perfilesPermitidos={['Paciente']}>
+              <Portal />
             </RutaProtegida>
           }
         />

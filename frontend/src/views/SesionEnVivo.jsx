@@ -350,7 +350,7 @@ export function SesionEnVivo() {
         <header className="vista__header">
           <div>
             <h1>Sesión en vivo</h1>
-            <p>Elegí un paciente para iniciar una sesión de terapia.</p>
+            <p>Seleccione un paciente para iniciar una sesión de terapia.</p>
           </div>
         </header>
 
@@ -372,11 +372,11 @@ export function SesionEnVivo() {
 
         <Card title="NUEVA SESIÓN">
           {pacientes.length === 0 ? (
-            <p>No tenés pacientes activos asignados.</p>
+            <p>No tiene pacientes activos asignados.</p>
           ) : (
             <div className="sesion__seleccion">
               <select value={pacienteSel} onChange={(e) => setPacienteSel(e.target.value)}>
-                <option value="">Seleccioná un paciente…</option>
+                <option value="">Seleccione un paciente…</option>
                 {pacientes.map((p) => (
                   <option key={p.id_paciente} value={p.id_paciente}>
                     {p.codigo_expediente} · {p.nombres} {p.apellidos}
@@ -436,8 +436,8 @@ export function SesionEnVivo() {
 
       {tiempoCumplido && (
         <div className="alerta-fc alerta-fc--info" role="status">
-          ⏱ Se cumplió el tiempo programado: la captura se detuvo. Revisá la observación clínica y
-          confirmá «Finalizar sesión» para guardar el resumen.
+          ⏱ Se cumplió el tiempo programado: la captura se detuvo. Revise la observación clínica y
+          confirme «Finalizar sesión» para guardar el resumen.
         </div>
       )}
 
@@ -473,8 +473,8 @@ export function SesionEnVivo() {
             <Button onClick={conectar}>Conectar</Button>
           </div>
           <p className="sesion__conexion-nota">
-            Usá <code>MOCK</code> para trabajar con datos simulados sin hardware. Al cumplirse la
-            duración, la sesión se detiene sola y te pide confirmar el cierre.
+            Use <code>MOCK</code> para trabajar con datos simulados sin hardware. Al cumplirse la
+            duración, la sesión se detiene sola y le pide confirmar el cierre.
           </p>
         </Card>
       )}

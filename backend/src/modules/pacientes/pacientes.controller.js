@@ -40,3 +40,17 @@ export const guardarMetas = asyncHandler(async (req, res) => {
   const datos = await pacientesService.guardarMetas(req.params.id, req.body.metas, req.usuario.id_usuario);
   res.json({ ok: true, data: datos, error: null });
 });
+
+export const listarCuentasAcceso = asyncHandler(async (req, res) => {
+  const datos = await pacientesService.listarCuentasAcceso(req.params.id);
+  res.json({ ok: true, data: datos, error: null });
+});
+
+export const vincularAcceso = asyncHandler(async (req, res) => {
+  const datos = await pacientesService.vincularAcceso(
+    req.params.id,
+    req.body.id_usuario_acceso,
+    req.usuario.id_usuario,
+  );
+  res.json({ ok: true, data: datos, error: null });
+});

@@ -12,6 +12,7 @@ import dispositivoRoutes from './modules/dispositivo/dispositivo.routes.js';
 import expedientesRoutes from './modules/expedientes/expedientes.routes.js';
 import indicadoresRoutes from './modules/indicadores/indicadores.routes.js';
 import reportesRoutes from './modules/reportes/reportes.routes.js';
+import portalRoutes from './modules/portal/portal.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use('/api/dispositivo', dispositivoRoutes);
 app.use('/api/expedientes', expedientesRoutes);
 app.use('/api/indicadores', indicadoresRoutes);
 app.use('/api/reportes', reportesRoutes);
+app.use('/api/portal', portalRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ ok: false, data: null, error: 'Recurso no encontrado.' });

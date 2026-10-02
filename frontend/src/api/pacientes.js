@@ -8,3 +8,8 @@ export const cambiarEstadoPaciente = (id, activo) => api.put(`/pacientes/${id}/e
 export const listarFisioterapeutas = () => api.get('/pacientes/fisioterapeutas');
 export const listarMetas = (id) => api.get(`/pacientes/${id}/metas`);
 export const guardarMetas = (id, metas) => api.put(`/pacientes/${id}/metas`, { metas });
+
+// Acceso al portal (Sprint 5). `idUsuarioAcceso` en null retira el acceso.
+export const listarCuentasAcceso = (id) => api.get(`/pacientes/${id}/cuentas-acceso`);
+export const vincularAcceso = (id, idUsuarioAcceso) =>
+  api.put(`/pacientes/${id}/acceso`, { id_usuario_acceso: idUsuarioAcceso });

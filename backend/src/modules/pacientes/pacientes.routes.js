@@ -8,6 +8,7 @@ import {
   cambiarEstadoPacienteSchema,
   listarPacientesQuerySchema,
   guardarMetasSchema,
+  vincularAccesoSchema,
 } from './pacientes.schemas.js';
 import * as pacientesController from './pacientes.controller.js';
 import * as expedientesController from '../expedientes/expedientes.controller.js';
@@ -32,6 +33,11 @@ router.put('/:id/estado', soloFisio, validate(cambiarEstadoPacienteSchema), paci
 // Alias declarado en CLAUDE.md (7): las sesiones del paciente son las mismas
 // que lista el expediente, con idéntico control de pertenencia.
 router.get('/:id/sesiones', expedientesController.sesiones);
+
+// Acceso del paciente a su portal (Sprint 5). Lo habilita el fisioterapeuta
+// que lleva el expediente; el Coordinador solo puede consultarlo.
+router.get('/:id/cuentas-acceso', pacientesController.listarCuentasAcceso);
+router.put('/:id/acceso', soloFisio, validate(vincularAccesoSchema), pacientesController.vincularAcceso);
 
 router.get('/:id/metas', pacientesController.listarMetas);
 router.put('/:id/metas', soloFisio, validate(guardarMetasSchema), pacientesController.guardarMetas);

@@ -60,7 +60,25 @@ const COLUMNAS = {
     { titulo: 'FC prom', ancho: 11, tipoDato: 'entero', valor: (f) => num(f.fc_promedio) },
     { titulo: 'Estado', ancho: 14, tipoDato: 'texto', valor: (f) => texto(f.estado) },
   ],
+  // Reporte que descarga el propio paciente desde el portal (Sprint 5). Es
+  // deliberadamente más corto que `evolucion`: sin frecuencia cardíaca, sin
+  // rango promedio y sin estado, porque solo lista sesiones finalizadas.
+  portal: [
+    { titulo: 'Sesión', ancho: 12, tipoDato: 'texto', valor: (f) => texto(f.etiqueta) },
+    { titulo: 'Fecha', ancho: 16, tipoDato: 'texto', valor: (f) => texto(f.fecha) },
+    { titulo: 'Duración (min)', ancho: 18, tipoDato: 'decimal', valor: (f) => num(f.duracion_minutos) },
+    { titulo: 'Movilidad (°)', ancho: 18, tipoDato: 'decimal', valor: (f) => num(f.rango_articular) },
+    { titulo: 'Repeticiones', ancho: 16, tipoDato: 'entero', valor: (f) => num(f.repeticiones_total) },
+  ],
 };
+
+// El aviso de tabla vacía se redacta distinto en el portal: el paciente no
+// eligió ningún criterio, simplemente todavía no tiene sesiones registradas.
+function mensajeSinDatos(tipo) {
+  return tipo === 'portal'
+    ? 'Aún no hay sesiones de terapia registradas.'
+    : 'No hay sesiones que cumplan los criterios seleccionados.';
+}
 
 function formatearFechaHora(fecha) {
   return new Date(fecha).toLocaleString('es-GT', {
@@ -72,9 +90,35 @@ function formatearFechaHora(fecha) {
   });
 }
 
+// Encabezado del reporte que el paciente descarga desde el portal. No lleva
+// totales del servicio ni frecuencia cardíaca: solo su propio progreso.
+function lineasEncabezadoPortal(contenido, meta) {
+  const p = contenido.paciente ?? {};
+  const filtros = meta.filtros ?? {};
+  const grados = (valor) => (num(valor) === null ? '—' : `${num(valor)}°`);
+
+  const periodo =
+    filtros.fecha_inicio || filtros.fecha_fin
+      ? `${texto(filtros.fecha_inicio) || 'inicio'} al ${texto(filtros.fecha_fin) || 'hoy'}`
+      : 'todo el tratamiento';
+
+  return [
+    ['Paciente', `${texto(p.codigo_expediente)} · ${nombrePaciente(p)}`],
+    ['Período', periodo],
+    ['Sesiones completadas', texto(p.sesiones_completadas) || '0'],
+    ['Movilidad inicial', grados(p.movilidad_inicial)],
+    ['Movilidad alcanzada', grados(p.movilidad_actual)],
+    ['Avance de su meta', num(p.avance_meta_pct) === null ? '—' : `${num(p.avance_meta_pct)}%`],
+    ['Generado', formatearFechaHora(meta.generado_en)],
+    ['Documento', texto(meta.documento)],
+  ];
+}
+
 // Líneas de contexto que encabezan cualquier reporte: período aplicado,
 // paciente si el reporte es individual y quién lo generó.
 function lineasEncabezado(contenido, meta) {
+  if (contenido.tipo === 'portal') return lineasEncabezadoPortal(contenido, meta);
+
   const filtros = meta.filtros ?? {};
   const { totales } = contenido;
   const lineas = [];
@@ -184,7 +228,7 @@ export async function construirExcel(contenido, meta) {
 
   if (contenido.filas.length === 0) {
     hoja.mergeCells(primeraFilaDatos, 1, primeraFilaDatos, ultimaColumna);
-    hoja.getCell(primeraFilaDatos, 1).value = 'No hay sesiones que cumplan los criterios seleccionados.';
+    hoja.getCell(primeraFilaDatos, 1).value = mensajeSinDatos(contenido.tipo);
     hoja.getCell(primeraFilaDatos, 1).font = { name: 'Calibri', size: 10, italic: true };
   } else {
     // Autofiltro sobre el encabezado de la tabla.
@@ -275,7 +319,7 @@ export async function construirPdf(contenido, meta) {
     doc
       .font('Helvetica-Oblique')
       .fontSize(9)
-      .text('No hay sesiones que cumplan los criterios seleccionados.', izquierda + 4, doc.y + 8);
+      .text(mensajeSinDatos(contenido.tipo), izquierda + 4, doc.y + 8);
   }
 
   doc.font('Helvetica').fontSize(7);

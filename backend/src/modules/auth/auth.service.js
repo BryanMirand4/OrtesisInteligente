@@ -14,7 +14,7 @@ export async function login(nombreUsuario, password, ip) {
   }
 
   if (usuario.bloqueado) {
-    throw new AppError(403, 'Cuenta bloqueada por múltiples intentos fallidos. Contactá al administrador.');
+    throw new AppError(403, 'Cuenta bloqueada por múltiples intentos fallidos. Contacte al administrador.');
   }
 
   if (!usuario.activo) {

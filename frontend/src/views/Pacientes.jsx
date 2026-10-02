@@ -8,6 +8,7 @@ import * as pacientesApi from '../api/pacientes.js';
 import * as catalogosApi from '../api/catalogos.js';
 import { PacienteFormModal } from './pacientes/PacienteFormModal.jsx';
 import { MetasModal } from './pacientes/MetasModal.jsx';
+import { AccesoPortalModal } from './pacientes/AccesoPortalModal.jsx';
 
 function formatearFechaCorta(valor) {
   if (!valor) return '—';
@@ -41,6 +42,7 @@ export function Pacientes() {
   const [filtroActivo, setFiltroActivo] = useState('activos');
   const [modalPaciente, setModalPaciente] = useState(null); // { paciente } | { paciente: null } | null
   const [modalMetasPaciente, setModalMetasPaciente] = useState(null);
+  const [modalAccesoPaciente, setModalAccesoPaciente] = useState(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -88,6 +90,13 @@ export function Pacientes() {
     },
     { key: 'ultima_sesion', header: 'ÚLTIMA', render: (p) => formatearFechaCorta(p.ultima_sesion) },
     {
+      key: 'acceso_portal',
+      header: 'PORTAL',
+      render: (p) => (
+        <Pill tone={p.acceso_portal ? 'ok' : 'neutral'}>{p.acceso_portal ? 'Habilitado' : 'Sin acceso'}</Pill>
+      ),
+    },
+    {
       key: 'estado',
       header: 'ESTADO',
       render: (p) => <Pill tone={p.activo ? 'ok' : 'neutral'}>{p.activo ? 'Activo' : 'Inactivo'}</Pill>,
@@ -104,6 +113,9 @@ export function Pacientes() {
                 </button>
                 <button type="button" className="link-btn" onClick={() => setModalMetasPaciente(p)}>
                   Metas
+                </button>
+                <button type="button" className="link-btn" onClick={() => setModalAccesoPaciente(p)}>
+                  Portal
                 </button>
                 <button type="button" className="link-btn" onClick={() => alternarEstado(p)}>
                   {p.activo ? 'Inactivar' : 'Activar'}
@@ -174,6 +186,17 @@ export function Pacientes() {
 
       {modalMetasPaciente && (
         <MetasModal paciente={modalMetasPaciente} onClose={() => setModalMetasPaciente(null)} />
+      )}
+
+      {modalAccesoPaciente && (
+        <AccesoPortalModal
+          paciente={modalAccesoPaciente}
+          onClose={() => setModalAccesoPaciente(null)}
+          onSaved={() => {
+            setModalAccesoPaciente(null);
+            cargar();
+          }}
+        />
       )}
     </div>
   );
