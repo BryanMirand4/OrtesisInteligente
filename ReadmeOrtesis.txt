@@ -13,7 +13,7 @@ Versión de Errores
 corrección de errores
 Con usuario coordinador, en esta versión mejoramos el inicio de sesión
 Carga Masiva, instructivo de uso con procedimientos
-
+Carga masiva
 warning: in the working copy of 'backend/backend/src/modules/usuarios/perfiles.service.js', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'backend/backend/src/modules/usuarios/usuarios.controller.js', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'backend/backend/src/modules/usuarios/usuarios.routes.js', LF will be replaced by CRLF the next time Git touches it
