@@ -8,7 +8,11 @@ avances doctor
 corrección de errores
 
 logística
+09092026 carga de usuarios 
+avances doctor
+corrección de errores
 
+logí
 Versión de Errores 
 corrección de errores
 Con usuario coordinador, en esta versión mejoramos el inicio de sesión
