@@ -1,9 +1,8 @@
 // =====================================================================
-//  Protocolo de trama de la órtesis (módulo Bluetooth HC-06)
+//  Protocolo de trama de la órtesis (módulo Bluetooth HC-05)
 // =====================================================================
-//  No existe una especificación previa del firmware, así que se define
-//  aquí un formato simple y se documenta. El modo mock genera exactamente
-//  este formato; cuando exista el firmware real, ajustar parseLinea().
+//  El firmware ortesis/ortesis.ino (modo APP) envía exactamente este formato;
+//  el modo mock lo imita. Si cambia el firmware, ajustar parseLinea().
 //
 //  Una lectura por línea de texto ASCII terminada en '\n'. Campos
 //  separados por coma, sin espacios:

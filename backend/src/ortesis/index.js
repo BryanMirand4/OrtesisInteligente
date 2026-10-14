@@ -11,3 +11,4 @@ export {
   tomarDuracionActivaFinal,
 } from './gestorCaptura.js';
 export { parseLinea, formatearLinea } from './protocolo.js';
+export { resolverPuerto, nombreOrtesis } from './buscarDispositivo.js';

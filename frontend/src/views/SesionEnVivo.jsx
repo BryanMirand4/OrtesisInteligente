@@ -37,8 +37,9 @@ export function SesionEnVivo() {
   const [accion, setAccion] = useState(false);
   const [avisoMeta, setAvisoMeta] = useState(null); // mensaje cuando ya se alcanzó la meta de sesiones
 
-  const [puerto, setPuerto] = useState('MOCK');
   const [duracionMin, setDuracionMin] = useState(String(DURACION_MIN_POR_DEFECTO));
+  // El enlace Bluetooth puede tardar unos segundos en establecerse.
+  const [conectando, setConectando] = useState(false);
   const [duracionPlaneadaSegundos, setDuracionPlaneadaSegundos] = useState(null);
   const [conexion, setConexion] = useState({ conectado: false, fuente: null });
   const [pausada, setPausada] = useState(false);
@@ -207,9 +208,10 @@ export function SesionEnVivo() {
 
   async function conectar() {
     setError('');
+    setConectando(true);
     try {
       const minutos = Number(duracionMin) || null;
-      const info = await sesionesApi.conectarSesion(sesion.id_sesion, puerto.trim() || 'MOCK', minutos);
+      const info = await sesionesApi.conectarSesion(sesion.id_sesion, minutos);
       t0Ref.current = 0;
       bufferRef.current = [];
       ultimoVivoRef.current = null;
@@ -223,6 +225,8 @@ export function SesionEnVivo() {
       conectarSocket(sesion.id_sesion);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setConectando(false);
     }
   }
 
@@ -451,15 +455,6 @@ export function SesionEnVivo() {
         <Card title="CONEXIÓN CON LA ÓRTESIS">
           <div className="sesion__conexion">
             <div className="sesion__conexion-campo">
-              <label htmlFor="puerto">Puerto</label>
-              <input
-                id="puerto"
-                value={puerto}
-                onChange={(e) => setPuerto(e.target.value)}
-                placeholder="COM4 o MOCK"
-              />
-            </div>
-            <div className="sesion__conexion-campo">
               <label htmlFor="duracion">Duración (min)</label>
               <input
                 id="duracion"
@@ -470,11 +465,14 @@ export function SesionEnVivo() {
                 onChange={(e) => setDuracionMin(e.target.value)}
               />
             </div>
-            <Button onClick={conectar}>Conectar</Button>
+            <Button onClick={conectar} disabled={conectando}>
+              {conectando ? 'Buscando órtesis…' : 'Conectar órtesis'}
+            </Button>
           </div>
           <p className="sesion__conexion-nota">
-            Use <code>MOCK</code> para trabajar con datos simulados sin hardware. Al cumplirse la
-            duración, la sesión se detiene sola y le pide confirmar el cierre.
+            Encienda la órtesis y manténgala cerca de la computadora; la aplicación la busca por
+            Bluetooth. Al cumplirse la duración, la sesión se detiene sola y le pide confirmar el
+            cierre.
           </p>
         </Card>
       )}

@@ -8,8 +8,6 @@ export const iniciarSesionSchema = z.object({
 });
 
 export const conectarSesionSchema = z.object({
-  // 'MOCK' o un puerto real (p. ej. 'COM4', '/dev/ttyUSB0').
-  puerto: z.string().trim().min(1).max(30),
   // Duración del temporizador de la sesión, en minutos. Opcional: sin ella
   // el cronómetro solo cuenta hacia arriba, sin corte automático.
   duracion_planeada_minutos: z.coerce.number().int().min(1).max(180).optional().nullable(),

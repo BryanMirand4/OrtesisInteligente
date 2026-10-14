@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events';
 import { parseLinea } from './protocolo.js';
 
-const BAUD_RATE = Number(process.env.SERIAL_BAUD_RATE) || 9600;
+// Debe coincidir con Serial.begin() de ortesis/ortesis.ino y con AT+UART del HC-05.
+const BAUD_RATE = Number(process.env.SERIAL_BAUD_RATE) || 115200;
 
 // Fuente real: abre el puerto serial virtual del HC-06, parte el flujo en
 // líneas y emite la trama normalizada. Misma interfaz que fuenteMock.
@@ -23,7 +24,14 @@ export function crearFuenteSerial(puerto) {
         port = new SerialPort({ path: puerto, baudRate: BAUD_RATE, autoOpen: false });
         port.open((err) => {
           if (err) {
-            reject(new Error(`No se pudo abrir el puerto ${puerto}: ${err.message}`));
+            // El detalle técnico queda en la consola; al usuario se le da algo accionable.
+            console.error(`Órtesis: no se pudo abrir ${puerto}: ${err.message}`);
+            reject(
+              new Error(
+                'La órtesis no respondió. Verifique que esté encendida y cerca de la ' +
+                  'computadora, y que ningún otro programa la esté usando.',
+              ),
+            );
             return;
           }
           const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
@@ -32,6 +40,9 @@ export function crearFuenteSerial(puerto) {
             if (trama) emisor.emit('trama', trama);
           });
           port.on('error', (e) => emisor.emit('error', e));
+          // El firmware cuenta repeticiones desde que se encendió: se reinicia
+          // el contador para que la sesión empiece en 0.
+          port.write('z\n');
           resolve();
         });
       });

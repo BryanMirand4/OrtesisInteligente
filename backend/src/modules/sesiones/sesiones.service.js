@@ -66,7 +66,7 @@ export async function obtener(idSesion, idFisioterapeuta) {
   return { ...sesion, captura: ortesis.estadoCaptura(idSesion) };
 }
 
-export async function conectar(idSesion, puerto, duracionPlaneadaMinutos, idFisioterapeuta) {
+export async function conectar(idSesion, duracionPlaneadaMinutos, idFisioterapeuta) {
   const sesion = await obtener(idSesion, idFisioterapeuta);
   if (sesion.estado !== 'EN_CURSO') {
     throw new AppError(409, 'La sesión no está en curso.');
@@ -75,6 +75,15 @@ export async function conectar(idSesion, puerto, duracionPlaneadaMinutos, idFisi
   const duracionPlaneadaSegundos = duracionPlaneadaMinutos
     ? Number(duracionPlaneadaMinutos) * 60
     : null;
+
+  // El usuario no elige puerto: se busca la órtesis emparejada por su nombre
+  // Bluetooth (o se usa el modo mock / puerto fijo según el .env).
+  let puerto;
+  try {
+    puerto = await ortesis.resolverPuerto();
+  } catch (err) {
+    throw new AppError(502, err.message);
+  }
 
   await pool.query('CALL sp_sesion_iniciar_captura(?,?,?)', [
     idSesion,

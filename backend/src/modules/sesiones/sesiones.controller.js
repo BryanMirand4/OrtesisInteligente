@@ -23,7 +23,6 @@ export const obtener = asyncHandler(async (req, res) => {
 export const conectar = asyncHandler(async (req, res) => {
   const datos = await sesionesService.conectar(
     req.params.id,
-    req.body.puerto,
     req.body.duracion_planeada_minutos,
     req.usuario.id_usuario,
   );
